@@ -1,0 +1,43 @@
+networks:
+  interweb:
+
+services:
+  fe:
+    build: ./fe
+    ports:
+      - "5002:5000"
+    volumes:
+      - ./fe/app:/app
+    environment:
+      - FLASK_APP=__init__.py
+      - FLASK_ENV=development
+    networks:
+      - interweb
+
+  users-service:
+    build: ./users-service
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./users-service/app:/app
+    depends_on:
+      - users-db
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+    networks:
+      - interweb
+
+  users-db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: users_db
+    volumes:
+      - users-data:/var/lib/postgresql/data
+    networks:
+      - interweb
+
+volumes:
+  users-data:
