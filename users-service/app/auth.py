@@ -2,8 +2,9 @@ import jwt
 from flask import request, jsonify
 from functools import wraps
 from datetime import datetime, timedelta, timezone
+from config import Config
 
-SECRET_KEY = "supersecretkey"
+SECRET_KEY = Config.SECRET_KEY
 
 def encode_auth_token(user_id):
     payload = {

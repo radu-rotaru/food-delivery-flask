@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+      <h1>Dashboard</h1>
+      {% if error %}
+          <p class="error">{{ error }}</p>
+      {% else %}
+          <p>Welcome to your dashboard, {{ user_info['email'] }}!</p>
+          <form action="{{ url_for('routes.logout') }}" method="get">
+              <button type="submit">Logout</button>
+          </form>
+      {% endif %}
+{% endblock %}
