@@ -28,6 +28,33 @@ services:
     networks:
       - interweb
 
+  order-service:
+    build: ./order-service
+    ports:
+      - "5004:5000"
+    volumes:
+      - ./order-service/app:/app
+    depends_on:
+      - order_service_db
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+    networks:
+      - interweb
+
+  order_service_db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: order_service_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - orders-data:/var/lib/postgresql/data
+    networks:
+      - interweb
+      
   users-db:
     image: postgres:14
     environment:
@@ -41,3 +68,4 @@ services:
 
 volumes:
   users-data:
+  orders-data:
