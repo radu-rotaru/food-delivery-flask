@@ -1,49 +1,14 @@
-from flask import Flask, request, jsonify, render_template
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+from flask import Blueprint, request, jsonify
+from app.models import db, Restaurant, MenuItem
 
-app = Flask(__name__)
+routes = Blueprint("routes", __name__)
 
-# Configurare baza de date PostgreSQL
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@postgres_db/restaurant_menu_service'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Initialize db and migrate
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-
-# Modele pentru restaurante și meniuri
-class Restaurant(db.Model):
-    __tablename__ = 'restaurants'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    location = db.Column(db.String(200), nullable=False)
-    menus = db.relationship('MenuItem', backref='restaurant', lazy=True)
-
-class MenuItem(db.Model):
-    __tablename__ = 'menu_items'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurants.id'), nullable=False)
-
-# Creare baze de date
-def create_tables():
-    db.create_all()
-
-@app.before_request
-def initialize_once():
-    if not hasattr(app, '_initialized'):
-        app._initialized = True
-        # Place your initialization code here
-        create_tables()
-
-@app.route('/')
+@routes.route('/')
 def home():
     return render_template('index.html')
 
 # Endpoint: Listă de restaurante
-@app.route('/restaurants', methods=['GET'])
+@routes.route('/restaurants', methods=['GET'])
 def get_restaurants():
     restaurants = Restaurant.query.all()
     return jsonify([{
@@ -51,7 +16,7 @@ def get_restaurants():
     } for r in restaurants]), 200
 
 # Endpoint: Detalii despre un restaurant
-@app.route('/restaurants/<int:restaurant_id>', methods=['GET'])
+@routes.route('/restaurants/<int:restaurant_id>', methods=['GET'])
 def get_restaurant_details(restaurant_id):
     restaurant = Restaurant.query.get(restaurant_id)
     if not restaurant:
@@ -63,7 +28,7 @@ def get_restaurant_details(restaurant_id):
     }), 200
 
 # Endpoint: Adaugă un restaurant (doar pentru admin)
-@app.route('/restaurants', methods=['POST'])
+@routes.route('/restaurants', methods=['POST'])
 def create_restaurant():
     data = request.get_json()
     if 'name' not in data or 'location' not in data:
@@ -79,7 +44,7 @@ def create_restaurant():
     }), 201
 
 # Endpoint: Listă de produse din meniu
-@app.route('/restaurants/<int:restaurant_id>/menu', methods=['GET'])
+@routes.route('/restaurants/<int:restaurant_id>/menu', methods=['GET'])
 def get_menu(restaurant_id):
     restaurant = Restaurant.query.get(restaurant_id)
     if not restaurant:
@@ -91,7 +56,7 @@ def get_menu(restaurant_id):
     } for item in menu_items]), 200
 
 # Endpoint: Adaugă un produs în meniu
-@app.route('/restaurants/<int:restaurant_id>/menu', methods=['POST'])
+@routes.route('/restaurants/<int:restaurant_id>/menu', methods=['POST'])
 def add_menu_item(restaurant_id):
     restaurant = Restaurant.query.get(restaurant_id)
     if not restaurant:
@@ -109,6 +74,3 @@ def add_menu_item(restaurant_id):
         'name': new_item.name,
         'price': new_item.price
     }), 201
-
-if __name__ == '__main__':
-    app.run(debug=True)

@@ -41,7 +41,21 @@ services:
       - FLASK_ENV=development
     networks:
       - interweb
-
+      
+  restaurants-service:
+    build: ./restaurants-service
+    ports:
+      - "5003:5000"
+    volumes:
+      - ./restaurants-service/app:/app
+    depends_on:
+      - restaurants-db
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+    networks:
+      - interweb
+      
   order_service_db:
     image: postgres:14
     environment:
@@ -57,6 +71,8 @@ services:
       
   users-db:
     image: postgres:14
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
@@ -66,6 +82,22 @@ services:
     networks:
       - interweb
 
+
+  restaurants-db:
+    image: postgres:14
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: restaurants_db
+    volumes:
+      - restaurants_data:/var/lib/postgresql/data
+    networks:
+      - interweb
+
+
 volumes:
   users-data:
   orders-data:
+  restaurants_data:

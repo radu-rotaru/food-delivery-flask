@@ -42,3 +42,20 @@ form button {
 form button:hover {
   background-color: #0056b3;
 }
+
+.flashes {
+  list-style-type: none;
+  padding: 0;
+}
+
+.flashes li {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.flashes li.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
