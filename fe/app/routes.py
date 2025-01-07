@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 import requests
 
 USERS_SERVICE_URL = 'http://users-service:5000'
+RESTAURANTS_SERVICE_URL = 'http://restaurants-service:5000'
 routes = Blueprint("routes", __name__)
 
 @routes.route('/')
@@ -66,13 +67,19 @@ def dashboard():
     headers = {'Authorization': f'Bearer {token}'}
 
     try:
-        response = requests.get(f'{USERS_SERVICE_URL}/me', headers=headers)
-        if response.status_code == 200:
-            user_info = response.json()
+        users_response = requests.get(f'{USERS_SERVICE_URL}/me', headers=headers)
+        if users_response.status_code == 200:
+            user_info = users_response.json()
+
+            if user_info.get('role') == 'restaurant':
+                restaurants_response = requests.get(f'{RESTAURANTS_SERVICE_URL}/restaurant/owner/{user_info.get("id")}', headers=headers)
+                if restaurants_response.status_code == 200:
+                    user_info['restaurants'] = restaurants_response.json()
+                else:
+                    flash(restaurants_response.json().get('message'), "error")
             return render_template('dashboard.html', user_info=user_info)
-            # return f"Welcome to your dashboard! Logged in user #{user_info['email']}"
         else:
-            flash(response.json().get('message'), "error")
+            flash(users_response.json().get('message'), "error")
             return redirect(url_for('routes.home'))
     except requests.exceptions.RequestException:
         flash("Service is unavailable, please try again later.", "error")
@@ -84,3 +91,21 @@ def logout():
     resp.set_cookie('jwt', '', expires=0)
     flash("You have been logged out.", "success")
     return resp
+
+@routes.route('/restaurants', methods=['GET'])
+def restaurants():
+    restaurants_response = requests.get(f'{RESTAURANTS_SERVICE_URL}/restaurants')
+    if restaurants_response.status_code == 200:
+        return render_template('restaurants.html', restaurants=restaurants_response.json())
+    else:
+        flash("Failed to retrieve restaurants!", "error")
+        return render_template('home.html')
+
+@routes.route('/restaurants/<int:restaurant_id>', methods=['GET'])
+def restaurant(restaurant_id):
+    restaurant_response = requests.get(f'{RESTAURANTS_SERVICE_URL}/restaurants/{restaurant_id}')
+    if restaurant_response.status_code == 200:
+        return render_template('restaurant.html', restaurant=restaurant_response.json())
+    else:
+        flash("Failed to retrieve restaurant!", "error")
+        return redirect(url_for('routes.restaurants'))

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>{{ restaurant.name }}</h1>
+  <p>{{ restaurant.location }}</p>
+
+  <h2>Menu</h2>
+  <ul>
+      {% for item in restaurant.menu %}
+          <li>{{ item.name }} - ${{ item.price }}</li>
+      {% endfor %}
+  </ul>
+{% endblock %}
