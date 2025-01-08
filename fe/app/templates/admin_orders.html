@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Orders</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; text-align: left; border: 1px solid #ddd; }
+        th { background-color: #f4f4f4; }
+    </style>
+</head>
+<body>
+    <h1>Admin Orders</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="orders-table-body">
+            <!-- Dynamic content here -->
+        </tbody>
+    </table>
+    <script>
+        async function fetchOrders() {
+            const restaurantId = 1; // Example restaurant ID
+            const response = await fetch(`/orders/${restaurantId}`);
+            const orders = await response.json();
+            const tbody = document.getElementById("orders-table-body");
+            tbody.innerHTML = ''; // Clear table content
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.status}</td>
+                    <td>
+                        <button onclick="updateOrderStatus(${order.id}, 'cancel')">Cancel</button>
+                        <button onclick="updateOrderStatus(${order.id}, 'accept')">Accept</button>
+                        <button onclick="updateOrderStatus(${order.id}, 'done')">Done</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function updateOrderStatus(orderId, status) {
+            await fetch(`/orders/${orderId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            fetchOrders(); // Refresh orders
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchOrders);
+    </script>
+</body>
+</html>
