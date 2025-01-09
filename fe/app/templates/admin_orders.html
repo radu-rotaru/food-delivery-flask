@@ -8,10 +8,16 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 8px; text-align: left; border: 1px solid #ddd; }
         th { background-color: #f4f4f4; }
+        form { margin-top: 20px; }
+        label { display: block; margin-top: 10px; }
+        input, select { margin-top: 5px; padding: 5px; width: 100%; box-sizing: border-box; }
+        button { margin-top: 10px; padding: 8px 16px; cursor: pointer; }
     </style>
 </head>
 <body>
     <h1>Admin Orders</h1>
+
+    <!-- Orders Table -->
     <table>
         <thead>
             <tr>
@@ -24,10 +30,33 @@
             <!-- Dynamic content here -->
         </tbody>
     </table>
+
+    <!-- Add Order Form -->
+    <form id="add-order-form">
+        <h2>Add New Order</h2>
+        <label for="user-id">User ID:</label>
+        <input type="number" id="user-id" name="user_id" required>
+
+        <label for="restaurant-id">Restaurant ID:</label>
+        <input type="number" id="restaurant-id" name="restaurant_id" required>
+
+        <label for="menu-items-ids">Menu Item IDs (comma-separated):</label>
+        <input type="text" id="menu-items-ids" name="menu_items_ids" placeholder="e.g., 1,2,3" required>
+
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+            <option value="processing">Processing</option>
+            <option value="cancel">Cancel</option>
+            <option value="done">Done</option>
+        </select>
+
+        <button type="submit">Add Order</button>
+    </form>
+
     <script>
         async function fetchOrders() {
             const restaurantId = 1; // Example restaurant ID
-            const response = await fetch(`/orders/${restaurantId}`);
+            const response = await fetch(`/orders/restaurant/${restaurantId}`);
             const orders = await response.json();
             const tbody = document.getElementById("orders-table-body");
             tbody.innerHTML = ''; // Clear table content
@@ -47,7 +76,7 @@
         }
 
         async function updateOrderStatus(orderId, status) {
-            await fetch(`/orders/${orderId}`, {
+            await fetch(`/orders/${orderId}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status })
@@ -55,7 +84,43 @@
             fetchOrders(); // Refresh orders
         }
 
+        async function addOrder(event) {
+            event.preventDefault();
+            const form = document.getElementById("add-order-form");
+            const userId = document.getElementById("user-id").value;
+            const restaurantId = document.getElementById("restaurant-id").value;
+            const menuItemsIds = document.getElementById("menu-items-ids").value.split(',').map(id => id.trim());
+            const status = document.getElementById("status").value;
+
+            const newOrder = {
+                user_id: parseInt(userId, 10),
+                restaurant_id: parseInt(restaurantId, 10),
+                menu_items_ids: menuItemsIds,
+                status: status
+            };
+
+            try {
+                const response = await fetch('/orders/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newOrder)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert(`Error: ${error.error}`);
+                    return;
+                }
+
+                form.reset(); // Clear the form
+                fetchOrders(); // Refresh the orders table
+            } catch (error) {
+                alert(`Network error: ${error.message}`);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', fetchOrders);
+        document.getElementById("add-order-form").addEventListener('submit', addOrder);
     </script>
 </body>
 </html>

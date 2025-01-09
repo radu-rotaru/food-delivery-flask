@@ -109,3 +109,11 @@ def restaurant(restaurant_id):
     else:
         flash("Failed to retrieve restaurant!", "error")
         return redirect(url_for('routes.restaurants'))
+
+@routes.route('/admin_orders')
+def admin_orders_page():
+    return render_template('admin_orders.html')
+
+@routes.route('/admin_promotions')
+def admin_promotions_page():
+    return render_template('admin_promotions.html')
