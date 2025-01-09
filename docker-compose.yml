@@ -41,7 +41,7 @@ services:
       - FLASK_ENV=development
     networks:
       - interweb
-      
+
   restaurants-service:
     build: ./restaurants-service
     ports:
@@ -55,7 +55,7 @@ services:
       - FLASK_ENV=development
     networks:
       - interweb
-      
+
   order_service_db:
     image: postgres:14
     environment:
@@ -68,7 +68,7 @@ services:
       - orders-data:/var/lib/postgresql/data
     networks:
       - interweb
-      
+
   users-db:
     image: postgres:14
     ports:
