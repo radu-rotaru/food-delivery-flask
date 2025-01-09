@@ -7,16 +7,6 @@
       {% else %}
           <p>Welcome to your dashboard, {{ user_info['email'] }}!</p>
 
-          {% if user_info['role'] == 'restaurant' %}
-            <h2>Your Restaurants</h2>
-            {% if user_info.restaurants %}
-                <ul>
-                    {% for restaurant in user_info.restaurants %}
-                        <li>{{ restaurant.name }} - {{ restaurant.address }}</li>
-                    {% endfor %}
-                </ul>
-          {% endif %}
-
           <form action="{{ url_for('routes.logout') }}" method="get">
               <button type="submit">Logout</button>
           </form>
