@@ -3,10 +3,6 @@ from app.models import db, Restaurant, MenuItem
 
 routes = Blueprint("routes", __name__)
 
-@routes.route('/')
-def home():
-    return render_template('index.html')
-
 # Endpoint: Listă de restaurante
 @routes.route('/restaurants', methods=['GET'])
 def get_restaurants():

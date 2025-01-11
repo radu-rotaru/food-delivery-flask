@@ -88,8 +88,3 @@ def get_user_payments(user_id):
             "promotion_applied_id": p.promotion_applied_id
         } for p in payments
     ])
-
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
