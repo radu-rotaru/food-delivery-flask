@@ -97,7 +97,35 @@ services:
       - interweb
 
 
+  payment-methods-service:
+    build: ./payment-methods-service
+    ports:
+      - "5005:5000"
+    volumes:
+      - ./payment-methods-service/app:/app
+    depends_on:
+      - payment-methods-service-db
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+    networks:
+      - interweb
+
+  payment-methods-service-db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: payment-methods-service-db
+    ports:
+      - "5435:5432"
+    volumes:
+      - payment-methods-data:/var/lib/postgresql/data
+    networks:
+      - interweb
+
 volumes:
   users-data:
+  payment-methods-data:
   orders-data:
   restaurants_data:
