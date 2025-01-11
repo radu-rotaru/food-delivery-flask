@@ -81,7 +81,7 @@ services:
       - users-data:/var/lib/postgresql/data
     networks:
       - interweb
-  
+
 
   restaurants-db:
     image: postgres:14

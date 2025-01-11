@@ -17,7 +17,7 @@ class Promotions(db.Model):
     __tablename__ = 'promotions'
 
     id = db.Column(db.Integer, primary_key=True)  # Primary Key
-    restaurant_id = db.Column(db.Integer, nullable=False)  # ID of the restaurant
+    user_id = db.Column(db.Integer, nullable=False)  # ID of the restaurant
     value = db.Column(db.Float, nullable=False)  # Value of the promotion
 
     def __repr__(self):

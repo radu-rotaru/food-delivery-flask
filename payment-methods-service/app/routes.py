@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, UserBalance, Promotions, Payments
+from app.models import db, UserBalance, Promotions, Payments
 
 routes = Blueprint("routes", __name__)
 
@@ -15,7 +15,7 @@ def add_balance():
     data = request.get_json()
     user_id = data.get('user_id')
     balance_to_add = data.get('balance_to_add')
-    
+
     user_balance = UserBalance.query.filter_by(user_id=user_id).first()
     if user_balance:
         user_balance.balance += balance_to_add
@@ -88,8 +88,3 @@ def get_user_payments(user_id):
             "promotion_applied_id": p.promotion_applied_id
         } for p in payments
     ])
-
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
