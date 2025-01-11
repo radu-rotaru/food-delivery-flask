@@ -3,6 +3,8 @@ import requests
 
 USERS_SERVICE_URL = 'http://users-service:5000'
 RESTAURANTS_SERVICE_URL = 'http://restaurants-service:5000'
+ORDER_SERVICE_URL = 'http://order-service:5000'
+PAYMENT_SERVICE_URL = 'http://payment-methods-service:5000'
 routes = Blueprint("routes", __name__)
 
 @routes.route('/')
@@ -110,9 +112,43 @@ def restaurant(restaurant_id):
         flash("Failed to retrieve restaurant!", "error")
         return redirect(url_for('routes.restaurants'))
 
-@routes.route('/admin_orders')
+@routes.route('/admin_orders', methods=['GET'])
 def admin_orders_page():
-    return render_template('admin_orders.html')
+    # Fetch all orders from the database
+    orders =requests.get(f'{ORDER_SERVICE_URL}/restaurants/1')
+    return render_template('admin_orders.html', orders=orders)
+
+
+@routes.route('/admin_orders/restaurant/<int:id>', methods=['GET'])
+def restaurant_orders(id):
+    # Fetch the orders from the API
+    id=1
+    response = requests.get(f'{ORDER_SERVICE_URL}/restaurant/{id}')
+    response.raise_for_status()
+    orders = response.json()
+
+    return render_template('admin_orders.html', restaurant_id=id, orders=orders)
+
+
+@routes.route('/orders/update', methods=['POST'])
+def update_order_status():
+    order_id = request.form.get('order_id')
+    status = request.form.get('status')
+    restaurant_id = request.form.get('restaurant_id')
+
+    if not order_id or not status:
+        flash("Order ID and status are required.", "error")
+        return redirect(url_for('routes.restaurant_orders', id=restaurant_id))
+
+    try:
+        response = requests.put(f'{ORDER_SERVICE_URL}/{order_id}/status', json={'status': status})
+        response.raise_for_status()
+        flash(f"Order {order_id} updated to {status}.", "success")
+    except requests.exceptions.RequestException as e:
+        flash(f"Error updating order: {e}", "error")
+
+    return redirect(url_for('routes.restaurant_orders', id=restaurant_id))
+
 
 @routes.route('/admin_promotions')
 def admin_promotions_page():

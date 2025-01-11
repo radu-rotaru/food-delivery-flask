@@ -37,7 +37,7 @@ def get_orders_by_restaurant(id):
 
 
 # Create a new order
-@routes.route('/', methods=['POST'])
+@routes.route('/createOrder', methods=['POST'])
 def create_order():
     data = request.get_json()
     try:
@@ -62,7 +62,7 @@ def update_order_status(id):
 
     data = request.get_json()
     new_status = data.get("status")
-    if not new_status or new_status not in ['cancel', '', 'done']:
+    if not new_status or new_status not in ['cancel', 'processing', 'done']:
         return jsonify({"error": "Invalid status"}), 400
 
     try:

@@ -3,124 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Orders</title>
+    <title>Restaurant Orders</title>
     <style>
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px; text-align: left; border: 1px solid #ddd; }
-        th { background-color: #f4f4f4; }
-        form { margin-top: 20px; }
-        label { display: block; margin-top: 10px; }
-        input, select { margin-top: 5px; padding: 5px; width: 100%; box-sizing: border-box; }
-        button { margin-top: 10px; padding: 8px 16px; cursor: pointer; }
+        /* Basic CSS Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        .orders-container {
+            margin: 1rem;
+        }
+        ul {
+            padding: 0;
+            list-style: none;
+        }
+        li {
+            border: 1px solid #ccc;
+            margin-bottom: 1rem;
+            padding: 1rem;
+        }
+        button {
+            margin-right: 0.5rem;
+            padding: 0.5rem 1rem;
+        }
+        .flash-messages .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .flash-messages .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #f1f1f1;
+        }
     </style>
 </head>
 <body>
-    <h1>Admin Orders</h1>
+    <!-- Header Section -->
+    <header>
+        <h1>Restaurant Orders</h1>
+    </header>
 
-    <!-- Orders Table -->
-    <table>
-        <thead>
-            <tr>
-                <th>Order ID</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="orders-table-body">
-            <!-- Dynamic content here -->
-        </tbody>
-    </table>
+    <!-- Orders Container -->
+    <div class="orders-container">
+        <h2>Orders for Restaurant {{ restaurant_id }}</h2>
 
-    <!-- Add Order Form -->
-    <form id="add-order-form">
-        <h2>Add New Order</h2>
-        <label for="user-id">User ID:</label>
-        <input type="number" id="user-id" name="user_id" required>
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                    {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
 
-        <label for="restaurant-id">Restaurant ID:</label>
-        <input type="number" id="restaurant-id" name="restaurant_id" required>
+        <!-- Orders List -->
+        {% if not orders %}
+            <p>No orders found for this restaurant.</p>
+        {% else %}
+            <ul>
+                {% for order in orders %}
+                <li class="order">
+                    <p>Order ID: {{ order.id }}</p>
+                    <p>Status: {{ order.status }}</p>
+                    <!-- Form for updating the order status -->
+                   <form action="{{ url_for('routes.update_order_status') }}" method="POST">
+                        <input type="hidden" name="order_id" value="{{ order.id }}">
+                        <input type="hidden" name="restaurant_id" value="{{ restaurant_id }}">
+                        <button type="submit" name="status" value="cancel">Cancel</button>
+                        <button type="submit" name="status" value="processing">Processing</button>
+                        <button type="submit" name="status" value="done">Done</button>
+                    </form>
 
-        <label for="menu-items-ids">Menu Item IDs (comma-separated):</label>
-        <input type="text" id="menu-items-ids" name="menu_items_ids" placeholder="e.g., 1,2,3" required>
+                </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
 
-        <label for="status">Status:</label>
-        <select id="status" name="status">
-            <option value="processing">Processing</option>
-            <option value="cancel">Cancel</option>
-            <option value="done">Done</option>
-        </select>
-
-        <button type="submit">Add Order</button>
-    </form>
-
-    <script>
-        async function fetchOrders() {
-            const restaurantId = 1; // Example restaurant ID
-            const response = await fetch(`/orders/restaurant/${restaurantId}`);
-            const orders = await response.json();
-            const tbody = document.getElementById("orders-table-body");
-            tbody.innerHTML = ''; // Clear table content
-            orders.forEach(order => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${order.id}</td>
-                    <td>${order.status}</td>
-                    <td>
-                        <button onclick="updateOrderStatus(${order.id}, 'cancel')">Cancel</button>
-                        <button onclick="updateOrderStatus(${order.id}, 'accept')">Accept</button>
-                        <button onclick="updateOrderStatus(${order.id}, 'done')">Done</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        async function updateOrderStatus(orderId, status) {
-            await fetch(`/orders/${orderId}/status`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status })
-            });
-            fetchOrders(); // Refresh orders
-        }
-
-        async function addOrder(event) {
-            event.preventDefault();
-            const form = document.getElementById("add-order-form");
-            const userId = document.getElementById("user-id").value;
-            const restaurantId = document.getElementById("restaurant-id").value;
-            const menuItemsIds = document.getElementById("menu-items-ids").value.split(',').map(id => id.trim());
-            const status = document.getElementById("status").value;
-
-            const newOrder = {
-                user_id: parseInt(userId, 10),
-                restaurant_id: parseInt(restaurantId, 10),
-                menu_items_ids: menuItemsIds,
-                status: status
-            };
-
-            try {
-                const response = await fetch('/orders/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newOrder)
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    alert(`Error: ${error.error}`);
-                    return;
-                }
-
-                form.reset(); // Clear the form
-                fetchOrders(); // Refresh the orders table
-            } catch (error) {
-                alert(`Network error: ${error.message}`);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', fetchOrders);
-        document.getElementById("add-order-form").addEventListener('submit', addOrder);
-    </script>
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2025 Restaurant Orders App</p>
+    </footer>
 </body>
 </html>
