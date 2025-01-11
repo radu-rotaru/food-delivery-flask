@@ -2,7 +2,7 @@ import jwt
 from flask import request, jsonify
 from functools import wraps
 from datetime import datetime, timedelta, timezone
-from config import Config
+from app.config import Config
 
 SECRET_KEY = Config.SECRET_KEY
 

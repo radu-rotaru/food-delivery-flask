@@ -149,7 +149,33 @@ def update_order_status():
 
     return redirect(url_for('routes.restaurant_orders', id=restaurant_id))
 
+@routes.route('/promotions', methods=['GET'])
+def list_promotions():
+    try:
+        # Fetch promotions from the backend
+        response = requests.get(PAYMENT_SERVICE_URL + '/promotions/')
+        response.raise_for_status()
+        promotions = response.json()
+        return render_template('admin_promotions.html', promotions=promotions)
+    except requests.exceptions.RequestException as e:
+        flash(f"Error fetching promotions: {e}", "error")
+        return render_template('admin_promotions.html', promotions=[])
 
-@routes.route('/admin_promotions')
-def admin_promotions_page():
-    return render_template('admin_promotions.html')
+@routes.route('/promotions', methods=['POST'])
+def add_promotion():
+    user_id = request.form.get('user_id')
+    value = request.form.get('value')
+
+    if not user_id or not value:
+        flash("User ID and value are required.", "error")
+        return redirect(url_for('routes.list_promotions'))
+
+    try:
+        # Send a POST request to the backend to add the promotion
+        response = requests.post(f'{PAYMENT_SERVICE_URL}/promotions/{user_id}', json={'value': value})
+        response.raise_for_status()
+        flash("Promotion added successfully.", "success")
+    except requests.exceptions.RequestException as e:
+        flash(f"Error adding promotion: {e}", "error")
+
+    return redirect(url_for('routes.list_promotions'))
