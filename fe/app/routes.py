@@ -3,8 +3,8 @@ import requests
 
 USERS_SERVICE_URL = 'http://users-service:5000'
 RESTAURANTS_SERVICE_URL = 'http://restaurants-service:5000'
-ORDER_SERVICE_URL = 'http://order-service:5000'
-PAYMENT_SERVICE_URL = 'http://payment-methods-service:5000'
+ORDERS_SERVICE_URL = 'http://order-service:5000'
+PAYMENTS_SERVICE_URL = 'http://payment-methods-service:5000'
 routes = Blueprint("routes", __name__)
 
 @routes.route('/')
@@ -73,11 +73,18 @@ def dashboard():
         if users_response.status_code == 200:
             user_info = users_response.json()
 
-            if user_info.get('role') == 'admin':
-                return render_template('dashboard-admin.html', user_info=user_info)
-            else:
-                flash(restaurants_response.json().get('message'), "error")
+            if user_info.get('role') == 'customer':
+                orders_response = requests.get(f'{ORDERS_SERVICE_URL}/user/{user_info.get("id")}', headers=headers)
+                if orders_response.status_code == 200:
+                    user_info['orders'] = orders_response.json()
+
+                balance_response = requests.get(f'{PAYMENTS_SERVICE_URL}/payments/balance/{user_info.get("id")}', headers=headers)
+                if balance_response.status_code == 200:
+                    user_info['balance'] = balance_response.json().get('balance')
                 return render_template('dashboard.html', user_info=user_info)
+             else:
+                 return render_template('dashboard-admin.html', user_info=user_info)
+
         else:
             flash(users_response.json().get('message'), "error")
             return redirect(url_for('routes.home'))

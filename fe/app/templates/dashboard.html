@@ -9,10 +9,26 @@
 </nav>
 
 <h1>Dashboard</h1>
-{% if error %}
-<p class="error">{{ error }}</p>
-{% else %}
-<p>Welcome to your dashboard, {{ user_info['email'] }}!</p>
+      {% if error %}
+          <p class="error">{{ error }}</p>
+      {% else %}
+          <p>Welcome to your dashboard, {{ user_info['email'] }}!</p>
+          <p>Your balance: ${{ user_info['balance'] }}</p>
+
+          <h2>Your Orders</h2>
+          <ul>
+              {% for order in user_info['orders'] %}
+                  <li>
+                    <strong>Restaurant:</strong> {{ order['restaurant_name'] }}<br>
+                    <strong>Dishes:</strong>
+                      <ul>
+                          {% for dish in order['menu_items_names'].split(',') %}
+                              <li>{{ dish }}</li>
+                          {% endfor %}
+                      </ul>
+                  </li>
+              {% endfor %}
+          </ul>
 
 <form action="{{ url_for('routes.logout') }}" method="get">
     <button type="submit">Logout</button>

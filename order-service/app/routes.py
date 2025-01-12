@@ -4,17 +4,15 @@ from sqlalchemy import text
 
 routes = Blueprint("routes", __name__)
 
-@routes.route('/')
-def hello_world():
-    return "Hello, World with __init__.py and routes!"
-
 # Helper function to serialize order object to dictionary
 def order_to_dict(order):
     return {
         "id": order.id,
         "user_id": order.user_id,
         "restaurant_id": order.restaurant_id,
-        "menu_items_ids": order.menu_items_ids,
+        "client_name": order.client_name,
+        "restaurant_name": order.restaurant_name,
+        "menu_items_names": order.menu_items_names,
         "status": order.status,
     }
 
@@ -45,6 +43,9 @@ def create_order():
             user_id=data.get("user_id"),
             restaurant_id=data.get("restaurant_id"),
             menu_items_ids=data.get("menu_items_ids"),
+            menu_items_names=data.get("menu_items_names"),
+            client_name=data.get("client_name"),
+            restaurant_name=data.get("restaurant_name"),
             status=data.get("status", "processing"),
         )
         db.session.add(new_order)
