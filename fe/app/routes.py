@@ -73,13 +73,11 @@ def dashboard():
         if users_response.status_code == 200:
             user_info = users_response.json()
 
-            if user_info.get('role') == 'restaurant':
-                restaurants_response = requests.get(f'{RESTAURANTS_SERVICE_URL}/restaurant/owner/{user_info.get("id")}', headers=headers)
-                if restaurants_response.status_code == 200:
-                    user_info['restaurants'] = restaurants_response.json()
-                else:
-                    flash(restaurants_response.json().get('message'), "error")
-            return render_template('dashboard.html', user_info=user_info)
+            if user_info.get('role') == 'admin':
+                return render_template('dashboard-admin.html', user_info=user_info)
+            else:
+                flash(restaurants_response.json().get('message'), "error")
+                return render_template('dashboard.html', user_info=user_info)
         else:
             flash(users_response.json().get('message'), "error")
             return redirect(url_for('routes.home'))
@@ -179,3 +177,24 @@ def add_promotion():
         flash(f"Error adding promotion: {e}", "error")
 
     return redirect(url_for('routes.list_promotions'))
+
+ @app.route('/add_restaurant', methods=['GET', 'POST'])
+ def add_restaurant():
+     if request.method == 'POST':
+         # Get data from the form
+         name = request.form.get('name')
+         location = request.form.get('location')
+         description = request.form.get('description')
+
+         # Create a new restaurant entry
+         new_restaurant = Restaurant(name=name, location=location, description=description)
+
+         # Add to the database
+         db.session.add(new_restaurant)
+         db.session.commit()
+
+         # Redirect to the restaurants page
+         return redirect(url_for('routes.restaurants'))
+
+     # If the request method is GET, render the form to add a restaurant
+     return render_template('add_restaurant.html')

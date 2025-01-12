@@ -3,7 +3,7 @@
 {% block content %}
 <nav>
     <ul>
-        <li><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('routes.dashboard-admin') }}">Dashboard</a></li>
         <li><a href="{{ url_for('routes.restaurants') }}">Restaurants</a></li>
     </ul>
 </nav>
@@ -12,7 +12,7 @@
 {% if error %}
 <p class="error">{{ error }}</p>
 {% else %}
-<p>Welcome to your dashboard, {{ user_info['email'] }}!</p>
+<p>Welcome to your dashboard, admin {{ user_info['email'] }}!</p>
 
 <form action="{{ url_for('routes.logout') }}" method="get">
     <button type="submit">Logout</button>

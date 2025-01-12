@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+<nav>
+    <ul>
+        <li><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('routes.restaurants') }}">Restaurants</a></li>
+    </ul>
+</nav>
+
   <h1>{{ restaurant.name }}</h1>
   <p>{{ restaurant.location }}</p>
 

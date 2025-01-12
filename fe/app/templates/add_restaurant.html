@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav>
+    <ul>
+        <li><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('routes.restaurants') }}">Restaurants</a></li>
+    </ul>
+</nav>
+
+<h1>Add a New Restaurant</h1>
+
+<form method="POST">
+    <div>
+        <label for="name">Restaurant Name:</label>
+        <input type="text" id="name" name="name" required>
+    </div>
+
+    <div>
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location" required>
+    </div>
+
+    <div>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required></textarea>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Add Restaurant</button>
+    </div>
+</form>
+
+{% endblock %}
