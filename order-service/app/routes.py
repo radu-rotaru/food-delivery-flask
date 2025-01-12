@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.models import db, Order
+from sqlalchemy import text
 
 routes = Blueprint("routes", __name__)
 
@@ -29,14 +30,14 @@ def get_orders_by_user(id):
 # Get orders by restaurant ID
 @routes.route('/restaurant/<int:id>', methods=['GET'])
 def get_orders_by_restaurant(id):
-    orders = Order.query.filter_by(restaurant_id=id).all()
-    if not orders:
-        return jsonify({"message": "No orders found for this restaurant"}), 404
-    return jsonify([order_to_dict(order) for order in orders]), 200
+     orders = Order.query.filter_by(restaurant_id=id).all()
+     if not orders:
+         return jsonify({"message": "No orders found for this restaurant"}), 404
+     return jsonify([order_to_dict(order) for order in orders]), 200
 
 
 # Create a new order
-@routes.route('/', methods=['POST'])
+@routes.route('/createOrder', methods=['POST'])
 def create_order():
     data = request.get_json()
     try:
@@ -48,9 +49,9 @@ def create_order():
         )
         db.session.add(new_order)
         db.session.commit()
-        return jsonify(order_to_dict(new_order)), 201
+        return  201
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return 400
 
 # Update the status of an order
 @routes.route('/<int:id>/status', methods=['PUT'])
