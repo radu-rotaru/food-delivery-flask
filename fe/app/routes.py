@@ -11,6 +11,10 @@ routes = Blueprint("routes", __name__)
 def home():
     return render_template('login.html')
 
+@routes.route('/add_restaurant')
+def add_restaurant():
+    return render_template('add_restaurant.html')
+
 @routes.route('/login', methods=['POST'])
 def login():
     email = request.form['email']
@@ -82,8 +86,8 @@ def dashboard():
                 if balance_response.status_code == 200:
                     user_info['balance'] = balance_response.json().get('balance')
                 return render_template('dashboard.html', user_info=user_info)
-             else:
-                 return render_template('dashboard-admin.html', user_info=user_info)
+            else:
+                return render_template('dashboard-admin.html', user_info=user_info)
 
         else:
             flash(users_response.json().get('message'), "error")
@@ -185,23 +189,23 @@ def add_promotion():
 
     return redirect(url_for('routes.list_promotions'))
 
- @app.route('/add_restaurant', methods=['GET', 'POST'])
- def add_restaurant():
-     if request.method == 'POST':
-         # Get data from the form
-         name = request.form.get('name')
-         location = request.form.get('location')
-         description = request.form.get('description')
+@routes.route('/restaurants', methods=['POST'])
+def create_restaurant():
+    data = request.form  # Getting form data from the POST request
+    if 'name' not in data or 'location' not in data:
+        return jsonify({'error': 'Invalid data'}), 400
 
-         # Create a new restaurant entry
-         new_restaurant = Restaurant(name=name, location=location, description=description)
+    new_restaurant = {
+        "name": data['name'],
+        "location": data['location'],
+        "description": data.get('description', '')  # Default to an empty string if description is not provided
+    }
+    try:
+        # Send a POST request to the backend to add the promotion
+        response = requests.post(f'{RESTAURANTS_SERVICE_URL}/restaurants', json=new_restaurant)
+        response.raise_for_status()
+        flash("Restaurant added successfully.", "success")
+    except requests.exceptions.RequestException as e:
+        flash(f"Error adding restaurant: {e}", "error")
 
-         # Add to the database
-         db.session.add(new_restaurant)
-         db.session.commit()
-
-         # Redirect to the restaurants page
-         return redirect(url_for('routes.restaurants'))
-
-     # If the request method is GET, render the form to add a restaurant
-     return render_template('add_restaurant.html')
+    return redirect(url_for('routes.restaurants'))
