@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav>
+    <ul>
+        <li><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('routes.restaurants') }}">Restaurants</a></li>
+        <li><a href="{{ url_for('routes.add_restaurant') }}">Add Restaurant</a></li>
+    </ul>
+</nav>
+
+<h1>Dashboard</h1>
+{% if error %}
+<p class="error">{{ error }}</p>
+{% else %}
+<p>Welcome to your dashboard, admin {{ user_info['email'] }}!</p>
+
+<form action="{{ url_for('routes.logout') }}" method="get">
+    <button type="submit">Logout</button>
+</form>
+{% endif %}
+{% endblock %}

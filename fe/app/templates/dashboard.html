@@ -1,14 +1,37 @@
 {% extends "base.html" %}
 
 {% block content %}
-      <h1>Dashboard</h1>
+<nav>
+    <ul>
+        <li><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('routes.restaurants') }}">Restaurants</a></li>
+    </ul>
+</nav>
+
+<h1>Dashboard</h1>
       {% if error %}
           <p class="error">{{ error }}</p>
       {% else %}
           <p>Welcome to your dashboard, {{ user_info['email'] }}!</p>
+          <p>Your balance: ${{ user_info['balance'] }}</p>
 
-          <form action="{{ url_for('routes.logout') }}" method="get">
-              <button type="submit">Logout</button>
-          </form>
-      {% endif %}
+          <h2>Your Orders</h2>
+          <ul>
+              {% for order in user_info['orders'] %}
+                  <li>
+                    <strong>Restaurant:</strong> {{ order['restaurant_name'] }}<br>
+                    <strong>Dishes:</strong>
+                      <ul>
+                          {% for dish in order['menu_items_names'].split(',') %}
+                              <li>{{ dish }}</li>
+                          {% endfor %}
+                      </ul>
+                  </li>
+              {% endfor %}
+          </ul>
+
+<form action="{{ url_for('routes.logout') }}" method="get">
+    <button type="submit">Logout</button>
+</form>
+{% endif %}
 {% endblock %}

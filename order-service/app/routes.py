@@ -1,11 +1,8 @@
 from flask import Blueprint, request, jsonify
 from app.models import db, Order
+from sqlalchemy import text
 
 routes = Blueprint("routes", __name__)
-
-@routes.route('/')
-def hello_world():
-    return "Hello, World with __init__.py and routes!"
 
 # Helper function to serialize order object to dictionary
 def order_to_dict(order):
@@ -13,7 +10,9 @@ def order_to_dict(order):
         "id": order.id,
         "user_id": order.user_id,
         "restaurant_id": order.restaurant_id,
-        "menu_items_ids": order.menu_items_ids,
+        "client_name": order.client_name,
+        "restaurant_name": order.restaurant_name,
+        "menu_items_names": order.menu_items_names,
         "status": order.status,
     }
 
@@ -29,14 +28,14 @@ def get_orders_by_user(id):
 # Get orders by restaurant ID
 @routes.route('/restaurant/<int:id>', methods=['GET'])
 def get_orders_by_restaurant(id):
-    orders = Order.query.filter_by(restaurant_id=id).all()
-    if not orders:
-        return jsonify({"message": "No orders found for this restaurant"}), 404
-    return jsonify([order_to_dict(order) for order in orders]), 200
+     orders = Order.query.filter_by(restaurant_id=id).all()
+     if not orders:
+         return jsonify({"message": "No orders found for this restaurant"}), 404
+     return jsonify([order_to_dict(order) for order in orders]), 200
 
 
 # Create a new order
-@routes.route('/', methods=['POST'])
+@routes.route('/createOrder', methods=['POST'])
 def create_order():
     data = request.get_json()
     try:
@@ -44,13 +43,16 @@ def create_order():
             user_id=data.get("user_id"),
             restaurant_id=data.get("restaurant_id"),
             menu_items_ids=data.get("menu_items_ids"),
+            menu_items_names=data.get("menu_items_names"),
+            client_name=data.get("client_name"),
+            restaurant_name=data.get("restaurant_name"),
             status=data.get("status", "processing"),
         )
         db.session.add(new_order)
         db.session.commit()
-        return jsonify(order_to_dict(new_order)), 201
+        return  201
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return 400
 
 # Update the status of an order
 @routes.route('/<int:id>/status', methods=['PUT'])
