@@ -1,13 +1,7 @@
 __pycache__/
 *.pyc
 *.pyo
-
-# Exclude virtual environments
 env/
 venv/
-
-# Exclude IDE-specific files
 .idea/
-
-# Exclude log files
 *.log
