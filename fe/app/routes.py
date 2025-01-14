@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, make_response
+from flask import Blueprint, render_template, request, redirect, url_for, flash, make_response, jsonify
 import requests
 
 USERS_SERVICE_URL = 'http://users-service:5000'
@@ -14,6 +14,11 @@ def home():
 @routes.route('/add_restaurant')
 def add_restaurant():
     return render_template('add_restaurant.html')
+
+@routes.route('/add_menu')
+def add_menu():
+    return render_template('add_menu.html')
+
 
 @routes.route('/login', methods=['POST'])
 def login():
@@ -122,17 +127,15 @@ def restaurant(restaurant_id):
         return redirect(url_for('routes.restaurants'))
 
 @routes.route('/admin_orders', methods=['GET'])
-def admin_orders_page():
-    # Fetch all orders from the database
-    orders =requests.get(f'{ORDER_SERVICE_URL}/restaurants/1')
-    return render_template('admin_orders.html', orders=orders)
+def admin_orders():
+    return redirect(url_for('routes.restaurant_orders', id=1))
 
 
 @routes.route('/admin_orders/restaurant/<int:id>', methods=['GET'])
 def restaurant_orders(id):
     # Fetch the orders from the API
     id=1
-    response = requests.get(f'{ORDER_SERVICE_URL}/restaurant/{id}')
+    response = requests.get(f'{ORDERS_SERVICE_URL}/orders')
     response.raise_for_status()
     orders = response.json()
 
@@ -150,7 +153,7 @@ def update_order_status():
         return redirect(url_for('routes.restaurant_orders', id=restaurant_id))
 
     try:
-        response = requests.put(f'{ORDER_SERVICE_URL}/{order_id}/status', json={'status': status})
+        response = requests.put(f'{ORDERS_SERVICE_URL}/{order_id}/status', json={'status': status})
         response.raise_for_status()
         flash(f"Order {order_id} updated to {status}.", "success")
     except requests.exceptions.RequestException as e:
@@ -158,11 +161,16 @@ def update_order_status():
 
     return redirect(url_for('routes.restaurant_orders', id=restaurant_id))
 
+@routes.route('/admin_promotions')
+def admin_promotions():
+    return redirect(url_for('routes.list_promotions', id=1))
+
+
 @routes.route('/promotions', methods=['GET'])
 def list_promotions():
     try:
         # Fetch promotions from the backend
-        response = requests.get(PAYMENT_SERVICE_URL + '/promotions/')
+        response = requests.get(PAYMENTS_SERVICE_URL + '/promotions/')
         response.raise_for_status()
         promotions = response.json()
         return render_template('admin_promotions.html', promotions=promotions)
@@ -181,7 +189,7 @@ def add_promotion():
 
     try:
         # Send a POST request to the backend to add the promotion
-        response = requests.post(f'{PAYMENT_SERVICE_URL}/promotions/{user_id}', json={'value': value})
+        response = requests.post(f'{PAYMENTS_SERVICE_URL}/promotions/{user_id}', json={'value': value})
         response.raise_for_status()
         flash("Promotion added successfully.", "success")
     except requests.exceptions.RequestException as e:
@@ -208,4 +216,33 @@ def create_restaurant():
     except requests.exceptions.RequestException as e:
         flash(f"Error adding restaurant: {e}", "error")
 
+    return (redirect(url_for('routes.restaurants')))
+
+@routes.route('/menu', methods=['POST'])
+def create_menu():
+    data = request.form  # Get form data from POST request
+    restaurant_id = data.get('restaurant_id')
+
+    if not restaurant_id or not data.get('name') or not data.get('price'):
+        flash("Invalid data: 'restaurant_id', 'name', and 'price' are required.", "error")
+        return redirect(url_for('routes.restaurants'))
+
+    # Prepare menu item payload
+    new_menu_item = {
+        "name": data['name'],
+        "price": data['price'],
+    }
+
+    try:
+        # Send a POST request to the backend with restaurant_id
+        response = requests.post(
+            f'{RESTAURANTS_SERVICE_URL}/restaurants/{restaurant_id}/menu',
+            json=new_menu_item
+        )
+        response.raise_for_status()
+        flash("Menu item added successfully.", "success")
+    except requests.exceptions.RequestException as e:
+        flash(f"Error adding menu item: {e}", "error")
+
     return redirect(url_for('routes.restaurants'))
+

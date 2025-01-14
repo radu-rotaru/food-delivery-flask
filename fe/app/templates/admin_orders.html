@@ -85,6 +85,9 @@
                 <li class="order">
                     <p>Order ID: {{ order.id }}</p>
                     <p>Status: {{ order.status }}</p>
+                    <p>Status: {{ order.restaurant_name }}</p>
+                    <p>Status: {{ order.menu_items_names }}</p>
+                    <p>Status: {{ order.client_name }}</p>
                     <!-- Form for updating the order status -->
                    <form action="{{ url_for('routes.update_order_status') }}" method="POST">
                         <input type="hidden" name="order_id" value="{{ order.id }}">
