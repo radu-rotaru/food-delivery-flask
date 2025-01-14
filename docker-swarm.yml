@@ -1,0 +1,175 @@
+version: '3.8'
+
+networks:
+  interweb:
+    driver: overlay
+
+services:
+  fe:
+    image: radust2/fe:latest
+    ports:
+      - "5002:5000"
+    environment:
+      - FLASK_APP=__init__.py
+      - FLASK_ENV=development
+    networks:
+      - interweb
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 50M
+      restart_policy:
+        condition: on-failure
+
+  users-service:
+    image: radust2/users-service:latest
+    ports:
+      - "5001:5000"
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+    networks:
+      - interweb
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 50M
+      restart_policy:
+        condition: on-failure
+
+  order-service:
+    image: radust2/order-service:latest
+    ports:
+      - "5004:5000"
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+    networks:
+      - interweb
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 50M
+      restart_policy:
+        condition: on-failure
+
+  restaurants-service:
+    image: radust2/restaurants-service:latest
+    ports:
+      - "5003:5000"
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+    networks:
+      - interweb
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 50M
+      restart_policy:
+        condition: on-failure
+
+  payment-methods-service:
+    image: radust2/payment-methods-service:latest
+    ports:
+      - "5005:5000"
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+    networks:
+      - interweb
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 50M
+      restart_policy:
+        condition: on-failure
+
+
+  order_service_db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: order_service_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - orders-data:/var/lib/postgresql/data
+    networks:
+      - interweb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  users-db:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: users_db
+    volumes:
+      - users-data:/var/lib/postgresql/data
+    networks:
+      - interweb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  restaurants-db:
+    image: postgres:14
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: restaurants_db
+    volumes:
+      - restaurants-data:/var/lib/postgresql/data
+    networks:
+      - interweb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  payment-methods-service-db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: payment-methods-service-db
+    ports:
+      - "5435:5432"
+    volumes:
+      - payment-methods-data:/var/lib/postgresql/data
+    networks:
+      - interweb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  users-data:
+  payment-methods-data:
+  orders-data:
+  restaurants-data:
