@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Ordering App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #333;
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+        }
+        main {
+            padding: 1rem;
+            margin: 0 auto;
+            max-width: 600px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        footer {
+            text-align: center;
+            margin: 1rem 0;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            margin: 0.5rem 0;
+        }
+        a, button {
+            text-decoration: none;
+            color: #007BFF;
+            cursor: pointer;
+        }
+        button {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+    <script>
+        // JavaScript pentru a gestiona schimbarea între vizualizări
+        function showPage(page) {
+            document.getElementById('indexPage').style.display = page === 'index' ? 'block' : 'none';
+            document.getElementById('menuPage').style.display = page === 'menu' ? 'block' : 'none';
+        }
+
+        function loadMenu(restaurantName) {
+            document.getElementById('menuTitle').textContent = `Menu for ${restaurantName}`;
+            showPage('menu');
+        }
+
+        function placeOrder() {
+            alert('Order placed successfully!');
+            showPage('index');
+        }
+    </script>
+</head>
+<body onload="showPage('index')">
+    <header>
+        <h1>Food Ordering App</h1>
+    </header>
+    <main>
+        <!-- Pagina principală -->
+<section id="indexPage">
+    <h2>Select a Restaurant</h2>
+    <ul>
+        {% for restaurant in restaurants %}
+            <li>
+                <a onclick="loadMenu('{{ restaurant.name }}')">{{ restaurant.name }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+</section>
+
+
+        <!-- Pagina de meniu -->
+        <<section id="menuPage">
+    <h2 id="menuTitle">Menu</h2>
+    <form method="post" action="/order">
+        <ul>
+            {% for item in menu_items %}
+                <li>
+                    <label>
+                        <input type="checkbox" name="menu_item" value="{{ item['id'] }}">
+                        {{ item['name'] }} - ${{ item['price'] }}
+                    </label>
+                </li>
+            {% endfor %}
+        </ul>
+        <div>
+            <label for="client_name">Your Name:</label>
+            <input type="text" id="client_name" name="client_name" required>
+        </div>
+        <button type="submit">Place Order</button>
+    </form>
+</section>
+
+    </main>
+    <footer>
+        <p>&copy; 2025 Food Ordering App</p>
+    </footer>
+</body>
+</html>

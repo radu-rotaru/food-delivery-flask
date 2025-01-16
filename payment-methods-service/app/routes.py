@@ -28,13 +28,13 @@ def add_balance():
 @routes.route('/promotions/', methods=['GET'])
 def get_promotions():
     promotions = Promotions.query.all()
-    return jsonify([{ "id": p.id, "user_id": p.restaurant_id, "value": p.value } for p in promotions])
+    return jsonify([{ "id": p.id, "user_id": p.user_id, "value": p.value } for p in promotions])
 
 @routes.route('/promotions/<int:user_id>', methods=['POST'])
 def add_promotion(user_id):
     data = request.get_json()
     value = data.get('value')
-    promotion = Promotions(restaurant_id=user_id, value=value)
+    promotion = Promotions(user_id=user_id, value=value)
     db.session.add(promotion)
     db.session.commit()
     return jsonify({"id": promotion.id, "user_id": user_id, "value": value})

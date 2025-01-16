@@ -21,7 +21,7 @@ class Promotions(db.Model):
     value = db.Column(db.Float, nullable=False)  # Value of the promotion
 
     def __repr__(self):
-        return f"<Promotions(restaurant_id={self.restaurant_id}, value={self.value})>"
+        return f"<Promotions(user_id={self.user_id}, value={self.value})>"
 
 
 class Payments(db.Model):
