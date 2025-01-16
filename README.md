@@ -11,7 +11,7 @@ A centralized dashboard that allows customers to view user information, order hi
 
 ### Features
 - **User Information**: Display user details.
-- **Order History**: List of all orders placed by the user (each order is linked to an restaurant, a list of items and the total price paid).
+- **Order History**: List of all orders placed by the user (each order is linked to a restaurant, a list of items, and the total price paid).
 - **Balance Information**: Display the current balance of the user.
 
 ---
@@ -53,14 +53,14 @@ Admin view of the restaurant list with functionality to add new restaurants.
 Admin view for managing individual restaurants, including adding menu items.
 
 ### Features
-- **Restaurant Information**: Display restaurant details including name, menu and description.
+- **Restaurant Information**: Display restaurant details including name, menu, and description.
 - **Menu Management**: Form to add new menu items.
 
 ---
 
 ## 6. Admin Orders Management
 ### Description
-Admin view to manage orders for each restaurant, including updating order status (processed, cancelled and done).
+Admin view to manage orders for each restaurant, including updating order status (processed, cancelled, and done).
 
 ### Features
 - **Order List**: Display list of orders per restaurant.
@@ -105,3 +105,10 @@ Admin view to manage promotions, including viewing and adding new promotions.
 - **Order Status Update**:
   - Update the status of an order.
 
+### Restaurant Service
+- **Restaurant Management**:
+  - Add a new restaurant.
+  - Update restaurant details (name, description, etc.).
+  - Get restaurant details.
+- **Menu Management**:
+  - Add, update, or delete menu items for a restaurant.
