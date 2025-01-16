@@ -2,19 +2,14 @@ import json
 from flask import Blueprint, request, jsonify
 from app.models import db, Order
 from sqlalchemy import text
+import requests
 
+PAYMENTS_SERVICE_URL='http://payment-methods-service:5000'
 
 routes = Blueprint("routes", __name__)
 
 # Helper function to serialize order object to dictionary
 def order_to_dict(order):
-    try:
-        menu_items_ids = json.loads(order.menu_items_ids)  # Asigură-te că procesul de deserializare e corect
-        menu_items_names = json.loads(order.menu_items_names)
-    except json.JSONDecodeError as e:
-        print(f"Error deserializing JSON: {e}")
-        menu_items_ids = []
-        menu_items_names = []
     return {
         "id": order.id,
         "user_id": order.user_id,
@@ -23,7 +18,8 @@ def order_to_dict(order):
         "status": order.status,
         "menu_items_names": order.menu_items_names,
         "client_name": order.client_name,
-        "restaurant_name": order.restaurant_name
+        "restaurant_name": order.restaurant_name,
+        "price": order.price
     }
 
 # Get orders by user ID
@@ -47,7 +43,7 @@ def get_orders_by_restaurant():
     try:
         # Custom query to fetch only the necessary fields
         query = """
-                SELECT id, restaurant_name, menu_items_names, status, client_name 
+                SELECT id, restaurant_name, menu_items_names, status, client_name
                 FROM "order";
             """
         result = db.session.execute(text(query))
@@ -70,21 +66,35 @@ def get_orders_by_restaurant():
 @routes.route('/createOrder', methods=['POST'])
 def create_order():
     data = request.get_json()
+
     try:
-        new_order = Order(
-            user_id=data.get("user_id"),
-            restaurant_id=data.get("restaurant_id"),
-            menu_items_ids=data.get("menu_items_ids"),
-            menu_items_names=data.get("menu_items_names"),
-            client_name=data.get("client_name"),
-            restaurant_name=data.get("restaurant_name"),
-            status=data.get("status", "processing"),
-        )
-        db.session.add(new_order)
-        db.session.commit()
-        return  201
+      new_order = Order(
+          user_id=data.get("user_id"),
+          restaurant_id=data.get("restaurant_id"),
+          menu_items_ids=data.get("menu_items_ids"),
+          menu_items_names=data.get("menu_items_names"),
+          client_name=data.get("client_name"),
+          restaurant_name=data.get("restaurant_name"),
+          status=data.get("status", "processing"),
+          price=data.get("order_price")
+      )
+      db.session.add(new_order)
+      db.session.commit()
+
+      # Make a request to the payment service to create a new payment
+      payment_data = {
+          "user_id": new_order.user_id,
+          "total_amount": new_order.price,
+          "order_id": new_order.id
+      }
+
+      response = requests.post(f"{PAYMENTS_SERVICE_URL}/payments", json=payment_data)
+      if response.status_code != 200:
+          db.session.rollback()
+          raise Exception("Failed to create payment")
+      return jsonify(order_to_dict(new_order)), 201
     except Exception as e:
-        return 400
+        return jsonify({"error": str(e)}), 400
 
 # Update the status of an order
 @routes.route('/<int:id>/status', methods=['PUT'])
@@ -105,7 +115,7 @@ def update_order_status(id):
 
         # Return the updated order details
         updated_order_query = text("""
-            SELECT id, restaurant_name, menu_items_names, status, client_name 
+            SELECT id, restaurant_name, menu_items_names, status, client_name
             FROM "order" WHERE id = :id
         """)
         updated_order = db.session.execute(updated_order_query, {"id": id}).fetchone()

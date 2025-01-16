@@ -1,21 +1,57 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block content %}
-
-<nav>
-    <ul>
-        <li><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
-        <li><a href="{{ url_for('routes.restaurants') }}">Restaurants</a></li>
-    </ul>
-</nav>
 
   <h1>{{ restaurant.name }}</h1>
   <p>{{ restaurant.location }}</p>
 
   <h2>Menu</h2>
-  <ul>
-      {% for item in restaurant.menu %}
-          <li>{{ item.name }} - ${{ item.price }}</li>
-      {% endfor %}
-  </ul>
+
+  {% if user_data.role == 'customer' %}
+    <form action="{{ url_for('routes.place_order') }}" method="post">
+        <input type="hidden" name="restaurant_id" value="{{ restaurant.id }}">
+        <input type="hidden" name="restaurant_name" value="{{ restaurant.name }}">
+        <input type="hidden" name="user_id" value="{{ user_data.id }}">
+        <input type="hidden" name="client_name" value="{{ user_data.email }}">
+        <input type="hidden" name="order_items" id="order_items" value="[]">
+        <input type="hidden" name="menu_items_names" id="menu_items_names" value="">
+        <input type="hidden" name="order_price" id="order_price" value="0">
+
+        <ul>
+            {% for item in restaurant.menu %}
+                <li>
+                    {{ item.name }} - ${{ item.price }}
+                    <button type="button" onclick="selectItem('{{ item.id }}', '{{ item.name }}', '{{ item.price }}')">Select</button>
+                    <span id="item-{{ item.id }}-selected" style="display: none;">Selected</span>
+                </li>
+            {% endfor %}
+        </ul>
+        <button type="submit">Place Order</button>
+    </form>
+  {% else %}
+    <ul>
+        {% for item in restaurant.menu %}
+            <li>{{ item.name }} - ${{ item.price }}</li>
+        {% endfor %}
+    </ul>
+  {% endif %}
+
+  <script>
+    let orderItems = [];
+    let orderItemNames = [];
+    let orderPrice = 0;
+
+    function selectItem(itemId, itemName, itemPrice) {
+        if (!orderItems.includes(itemId)) {
+            orderItems.push(itemId);
+            orderItemNames.push(itemName);
+            orderPrice += parseFloat(itemPrice);
+
+            document.getElementById('order_price').value = orderPrice;
+            document.getElementById('order_items').value = JSON.stringify(orderItems);
+            document.getElementById('menu_items_names').value = orderItemNames.join(', ');
+            document.getElementById(`item-${itemId}-selected`).style.display = 'inline';
+        }
+    }
+  </script>
 {% endblock %}

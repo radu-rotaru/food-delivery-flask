@@ -50,31 +50,42 @@ def make_payment():
     if not user_balance:
         return jsonify({"error": "User not found"}), 404
 
+    if user_balance.balance <= 0:
+        return jsonify({"error": "Insufficient balance"}), 400
+
     promotions = Promotions.query.filter_by(user_id=user_id).all()
     discount = sum(p.value for p in promotions)
     final_amount = total_amount - discount
 
-    user_balance.balance -= final_amount
-    status = "paid" if user_balance.balance >= 0 else "unpaid"
+    if user_balance.balance >= final_amount:
+      status = "paid"
 
-    payment = Payments(
+      if final_amount > 0:
+        user_balance.balance -= final_amount
+
+      db.session.add(user_balance)
+
+      payment = Payments(
         user_id=user_id,
         order_id=order_id,
         status=status,
         total_price=final_amount,
         promotion_applied_id=promotions[0].id if promotions else None
-    )
+      )
 
-    db.session.add(payment)
-    db.session.commit()
+      db.session.add(payment)
+      db.session.commit()
 
-    return jsonify({
-        "user_id": user_id,
-        "order_id": order_id,
-        "status": status,
-        "final_amount": final_amount,
-        "new_balance": user_balance.balance
-    })
+      return jsonify({
+          "user_id": user_id,
+          "order_id": order_id,
+          "status": status,
+          "final_amount": final_amount,
+          "new_balance": user_balance.balance
+      })
+    else:
+      status = "unpaid"
+      return jsonify({"error": "Insufficient balance"}), 400
 
 @routes.route('/payments/user/<int:user_id>', methods=['GET'])
 def get_user_payments(user_id):

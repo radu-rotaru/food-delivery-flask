@@ -5,7 +5,6 @@
     <ul>
         <li><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
         <li><a href="{{ url_for('routes.restaurants') }}">Restaurants</a></li>
-        <li><a href="{{ url_for('routes.add_order') }}">Add Order</a></li>
     </ul>
 </nav>
 
@@ -22,11 +21,12 @@
                   <li>
                     <strong>Restaurant:</strong> {{ order['restaurant_name'] }}<br>
                     <strong>Dishes:</strong>
-                      <ul>
-                          {% for dish in order['menu_items_names'].split(',') %}
-                              <li>{{ dish }}</li>
-                          {% endfor %}
-                      </ul>
+                    <ul>
+                        {% for dish in order['menu_items_names'].split(',') %}
+                            <li>{{ dish }}</li>
+                        {% endfor %}
+                    </ul>
+                    <strong>Price:</strong> ${{ order['price'] }}
                   </li>
               {% endfor %}
           </ul>

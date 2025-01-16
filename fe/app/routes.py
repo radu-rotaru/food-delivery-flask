@@ -124,7 +124,16 @@ def restaurants():
 def restaurant(restaurant_id):
     restaurant_response = requests.get(f'{RESTAURANTS_SERVICE_URL}/restaurants/{restaurant_id}')
     if restaurant_response.status_code == 200:
-        return render_template('restaurant.html', restaurant=restaurant_response.json())
+        token = request.cookies.get('jwt')
+        if not token:
+            flash("You need to log in first.", "error")
+            return redirect(url_for('routes.home'))
+
+        headers = {'Authorization': f'Bearer {token}'}
+
+        users_response = requests.get(f'{USERS_SERVICE_URL}/me', headers=headers)
+
+        return render_template('restaurant.html', restaurant=restaurant_response.json(), user_data=users_response.json())
     else:
         flash("Failed to retrieve restaurant!", "error")
         return redirect(url_for('routes.restaurants'))
@@ -252,25 +261,24 @@ def create_menu():
 @routes.route('/order', methods=['POST'])
 def place_order():
     # Datele formularului
-    menu_items_ids = request.form.getlist('menu_item')
-    client_name = request.form.get('client_name')
+    menu_items_ids = request.form.getlist('order_items')
+    menu_items_names = request.form.get('menu_items_names')
     restaurant_id = request.form.get('restaurant_id')
-
-    # Obține numele restaurantului (opțional)
-    try:
-        restaurant_response = requests.get(f"{RESTAURANTS_SERVICE_URL}/restaurants/{restaurant_id}")
-        restaurant_name = restaurant_response.json().get('name') if restaurant_response.status_code == 200 else "Unknown"
-    except Exception as e:
-        restaurant_name = "Unknown"
+    restaurant_name = request.form.get('restaurant_name')
+    user_id = request.form.get('user_id')
+    client_name = request.form.get('client_name')
+    order_price = request.form.get('order_price')
 
     # Construiește payload-ul comenzii
     order_data = {
-        "user_id": 1,  # Acest ID poate fi obținut dintr-un sistem de autentificare
+        "user_id": user_id,
         "restaurant_id": restaurant_id,
         "menu_items_ids": menu_items_ids,
         "client_name": client_name,
         "restaurant_name": restaurant_name,
         "status": "processing",
+        "menu_items_names": menu_items_names,
+        "order_price": order_price
     }
 
     # Trimite comanda către microserviciul `order`
