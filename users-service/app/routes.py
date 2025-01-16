@@ -1,6 +1,9 @@
+import requests
 from flask import Blueprint, request, jsonify
 from app.models import db, User
 from app.auth import encode_auth_token, token_required
+
+PAYMENTS_SERVICE_URL = 'http://payment-methods-service:5000'
 
 routes = Blueprint("routes", __name__)
 
@@ -22,6 +25,11 @@ def register():
     user.set_password(data["password"])
     db.session.add(user)
     db.session.commit()
+
+    #user_from_db=User.query.filter_by(email=data["email"]).first();
+    # url de payment si add balance
+    response = requests.post(f'{PAYMENTS_SERVICE_URL}/payments/balance', json={'user_id': user.id,'balance_to_add': 1000})
+    response.raise_for_status()
     return jsonify({"message": "User registered successfully"}), 201
 
 @routes.route("/login", methods=["POST"])

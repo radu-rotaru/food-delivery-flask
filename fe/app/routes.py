@@ -18,6 +18,9 @@ def add_restaurant():
 @routes.route('/add_menu')
 def add_menu():
     return render_template('add_menu.html')
+@routes.route('/add_order')
+def add_order():
+    return render_template('add_order.html')
 
 
 @routes.route('/login', methods=['POST'])
@@ -246,3 +249,49 @@ def create_menu():
 
     return redirect(url_for('routes.restaurants'))
 
+@routes.route('/order', methods=['POST'])
+def place_order():
+    # Datele formularului
+    menu_items_ids = request.form.getlist('menu_item')
+    client_name = request.form.get('client_name')
+    restaurant_id = request.form.get('restaurant_id')
+
+    # Obține numele restaurantului (opțional)
+    try:
+        restaurant_response = requests.get(f"{RESTAURANTS_SERVICE_URL}/restaurants/{restaurant_id}")
+        restaurant_name = restaurant_response.json().get('name') if restaurant_response.status_code == 200 else "Unknown"
+    except Exception as e:
+        restaurant_name = "Unknown"
+
+    # Construiește payload-ul comenzii
+    order_data = {
+        "user_id": 1,  # Acest ID poate fi obținut dintr-un sistem de autentificare
+        "restaurant_id": restaurant_id,
+        "menu_items_ids": menu_items_ids,
+        "client_name": client_name,
+        "restaurant_name": restaurant_name,
+        "status": "processing",
+    }
+
+    # Trimite comanda către microserviciul `order`
+    try:
+        order_response = requests.post(f"{ORDERS_SERVICE_URL}/createOrder", json=order_data)
+        if order_response.status_code == 201:
+            return redirect(url_for('routes.dashboard'))
+        else:
+            return "Failed to place order", 400
+    except Exception as e:
+        print(f"Error placing order: {e}")
+        return "Error placing order", 500
+
+@routes.route('/menu/<int:restaurant_id>', methods=['GET'])
+def menu(restaurant_id):
+    # Obține meniul pentru restaurantul specific
+    try:
+        response = requests.get(f"{RESTAURANTS_SERVICE_URL}/restaurants/{restaurant_id}/menu")
+        menu_items = response.json() if response.status_code == 200 else []
+    except Exception as e:
+        print(f"Error fetching menu for restaurant {restaurant_id}: {e}")
+        menu_items = []
+
+    return render_template('add_order.html', menu_items=menu_items, restaurant_id=restaurant_id)
